@@ -6,6 +6,7 @@ import { TodoList } from "@/components/TodoList";
 import { useTodoStore } from "@/store/useTodoStore";
 import { useWebRTC } from "@/hooks/useWebRTC";
 import { Todo } from "@/types/todo";
+import { Priority } from "@/types/todo";
 
 interface TodoPageClientProps {
   initialTodos: Todo[];
@@ -31,6 +32,7 @@ export function TodoPageClient({ initialTodos }: TodoPageClientProps) {
     broadcastTodoAdd,
     broadcastTodoDelete,
     broadcastTodoToggle,
+    broadcastTodoUpdate,
   } = useWebRTC(roomId);
 
   useEffect(() => {
@@ -41,8 +43,8 @@ export function TodoPageClient({ initialTodos }: TodoPageClientProps) {
     }
   }, []);
 
-  const handleAddTodo = async (title: string, description?: string) => {
-    const newTodo = await addTodo(title, description);
+  const handleAddTodo = async (title: string, priority: Priority, description?: string) => {
+    const newTodo = await addTodo(title, priority, description);
     if (newTodo) {
       broadcastTodoAdd(newTodo);
     }
@@ -61,8 +63,12 @@ export function TodoPageClient({ initialTodos }: TodoPageClientProps) {
     broadcastTodoDelete(id);
   };
 
-  const handleEditTodo = async (id: string, title: string, description?: string) => {
-    await updateTodo(id, title, description);
+  const handleEditTodo = async (id: string, title: string, priority: Priority, description?: string) => {
+    await updateTodo(id, title, priority, description);
+    const todo = todos.find((t) => t.id === id);
+    if (todo) {
+      broadcastTodoUpdate({ ...todo, title, priority, description });
+    }
   };
 
   return (

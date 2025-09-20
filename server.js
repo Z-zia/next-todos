@@ -50,7 +50,8 @@ app.prepare().then(() => {
 
     // ========== Todo同期イベント ==========
     socket.on('todo-update', (data) => {
-      socket.to(data.roomId).emit('todos-updated', data.todos);
+      socket.to(data.roomId).emit('todo-updated', data.todo);
+      console.log(`✏️ Todo updated in room ${data.roomId}`);
     });
 
     socket.on('todo-add', (data) => {

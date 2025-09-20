@@ -1,8 +1,13 @@
 import { Todo } from "@/types/todo";
+import { Priority } from "@/types/todo";
 
 let todos: Todo[] = [];
 
 export const todoDb = {
+  addTodo(todo: Todo): void {
+    todos.push(todo);
+  },
+
   getAll(): Todo[] {
     return todos;
   },
@@ -11,11 +16,12 @@ export const todoDb = {
     return todos.find((todo) => todo.id === id);
   },
 
-  create(title: string, description?: string): Todo {
+  create(title: string, priority: Priority, description?: string): Todo {
     const todo: Todo = {
       id: Math.random().toString(36).substring(7),
       title,
       description,
+      priority: priority,
       completed: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -24,16 +30,16 @@ export const todoDb = {
     return todo;
   },
 
-  update(id: string, updates: Partial<Omit<Todo, "id">>): Todo | undefined {
-    const index = todos.findIndex((todo) => todo.id === id);
-    if (index === -1) return undefined;
+  update(id: string, updates: { title?: string; priority?: Priority; description?: string; completed?: boolean }): Todo | undefined {
+    const todo = todos.find((t) => t.id === id);
+    if (!todo) return undefined;
 
-    todos[index] = {
-      ...todos[index],
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    };
-    return todos[index];
+    if (updates.title !== undefined) todo.title = updates.title;
+    if (updates.priority !== undefined) todo.priority = updates.priority;
+    if (updates.description !== undefined) todo.description = updates.description;
+    if (updates.completed !== undefined) todo.completed = updates.completed;
+    todo.updatedAt = new Date().toISOString();
+    return todo;
   },
 
   delete(id: string): boolean {

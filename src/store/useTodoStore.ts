@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { Todo } from "@/types/todo";
+import { Priority } from "@/types/todo";
 import axios from "axios";
 
 interface TodoStore {
@@ -8,11 +9,12 @@ interface TodoStore {
   error: string | null;
 
   fetchTodos: () => Promise<void>;
-  addTodo: (title: string, description?: string) => Promise<Todo | null>;
+  addTodo: (title: string, priority: Priority, description?: string) => Promise<Todo | null>;
   toggleTodo: (id: string) => Promise<void>;
   deleteTodo: (id: string) => Promise<void>;
-  updateTodo: (id: string, title: string, description?: string) => Promise<void>;
+  updateTodo: (id: string, title: string, priority: Priority, description?: string) => Promise<void>;
   setTodos: (todos: Todo[]) => void;
+  updateTodoFromPeer: (todo: Todo) => void;
   addTodoFromPeer: (todo: Todo) => void;
   deleteTodoFromPeer: (todoId: string) => void;
   toggleTodoFromPeer: (todo: Todo) => void;
@@ -33,10 +35,10 @@ export const useTodoStore = create<TodoStore>((set, get) => ({
     }
   },
 
-  addTodo: async (title: string, description?: string) => {
+  addTodo: async (title: string, priority: Priority, description?: string) => {
     set({ error: null });
     try {
-      const response = await axios.post("/api/todos", { title, description });
+      const response = await axios.post("/api/todos", { title, priority, description });
       set((state) => ({
         todos: [...state.todos, response.data],
       }));
@@ -73,10 +75,10 @@ export const useTodoStore = create<TodoStore>((set, get) => ({
     }
   },
 
-  updateTodo: async (id: string, title: string, description?: string) => {
+  updateTodo: async (id: string, title: string, priority: Priority, description?: string) => {
     set({ error: null });
     try {
-      const response = await axios.put(`/api/todos/${id}`, { title, description });
+      const response = await axios.put(`/api/todos/${id}`, { title, priority, description });
       set((state) => ({
         todos: state.todos.map((todo) =>
           todo.id === id ? response.data : todo
@@ -91,6 +93,16 @@ export const useTodoStore = create<TodoStore>((set, get) => ({
     set({ todos });
   },
 
+  updateTodoFromPeer: (todo: Todo) => {
+    set((state) => ({
+      todos: state.todos.map((t) => (t.id === todo.id ? todo : t)),
+    }));
+    // サーバーのDBにも同期
+    axios.post("/api/todos/sync", todo).catch((error) => {
+      console.error("Failed to sync todo update to local DB:", error);
+    });
+  },
+
   addTodoFromPeer: (todo: Todo) => {
     set((state) => {
       // 重複チェック
@@ -98,6 +110,10 @@ export const useTodoStore = create<TodoStore>((set, get) => ({
         return state;
       }
       return { todos: [...state.todos, todo] };
+    });
+    // サーバーのDBにも追加（他のユーザーから受信したTodoを自分のDBに同期）
+    axios.post("/api/todos/sync", todo).catch((error) => {
+      console.error("Failed to sync todo to local DB:", error);
     });
   },
 
@@ -111,5 +127,9 @@ export const useTodoStore = create<TodoStore>((set, get) => ({
     set((state) => ({
       todos: state.todos.map((t) => (t.id === todo.id ? todo : t)),
     }));
+    // サーバーのDBにも同期
+    axios.post("/api/todos/sync", todo).catch((error) => {
+      console.error("Failed to sync todo toggle to local DB:", error);
+    });
   },
 }));

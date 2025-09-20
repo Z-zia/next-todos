@@ -1,13 +1,14 @@
 "use client";
 
 import { Todo } from "@/types/todo";
+import { Priority } from "@/types/todo";
 import { TodoItem } from "./TodoItem";
 
 interface TodoListProps {
   todos: Todo[];
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
-  onEdit: (id: string, title: string, description?: string) => void;
+  onEdit: (id: string, title: string, priority: Priority, description?: string) => void;
 }
 
 export function TodoList({ todos, onToggle, onDelete, onEdit }: TodoListProps) {

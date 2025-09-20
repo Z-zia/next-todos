@@ -1,12 +1,14 @@
 "use client";
 
 import { Todo } from "@/types/todo";
+import { Priority } from "@/types/todo";
+import { PriorityPulldown } from "./PriorityPulldown";
 
 interface TodoItemProps {
   todo: Todo;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
-  onEdit: (id: string, title: string, description?: string) => void;
+  onEdit: (id: string, title: string, priority: Priority, description?: string) => void;
 }
 
 export function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
@@ -36,6 +38,12 @@ export function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
               {todo.description}
             </p>
           )}
+          <div className="mt-2">
+            <PriorityPulldown
+              priority={todo.priority}
+              onChange={(newPriority) => onEdit(todo.id, todo.title, newPriority, todo.description)}
+            />
+          </div>
           <div className="mt-2 text-xs text-gray-400">
             更新日時: {new Date(todo.updatedAt).toLocaleString("ja-JP")}
           </div>

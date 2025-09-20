@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { todoDb } from "@/server/db";
 import { z } from "zod";
+import { Priority } from "@/types/todo";
 
 const updateTodoSchema = z.object({
   title: z.string().min(1).optional(),
+  priority: z.enum(['low', 'medium', 'high']).optional(),
   description: z.string().optional(),
   completed: z.boolean().optional(),
 });

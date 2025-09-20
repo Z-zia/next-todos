@@ -4,6 +4,7 @@ import { z } from "zod";
 
 const createTodoSchema = z.object({
   title: z.string().min(1),
+  priority: z.enum(['low', 'medium', 'high']),
   description: z.string().optional(),
 });
 
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = createTodoSchema.parse(body);
 
-    const todo = todoDb.create(validated.title, validated.description);
+    const todo = todoDb.create(validated.title, validated.priority, validated.description);
 
     return NextResponse.json(todo, { status: 201 });
   } catch (error) {

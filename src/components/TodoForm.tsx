@@ -1,22 +1,26 @@
 "use client";
 
 import { useState } from "react";
+import { PriorityPulldown } from "./PriorityPulldown";
+import { Priority } from "@/types/todo";
 
 interface TodoFormProps {
-  onSubmit: (title: string, description?: string) => void;
+  onSubmit: (title: string, priority: Priority, description?: string) => void;
 }
 
 export function TodoForm({ onSubmit }: TodoFormProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [priority, setPriority] = useState<Priority>("medium");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
 
-    onSubmit(title.trim(), description.trim() || undefined);
+    onSubmit(title.trim(), priority, description.trim() || undefined);
     setTitle("");
     setDescription("");
+    setPriority("medium");
   };
 
   return (
@@ -48,6 +52,15 @@ export function TodoForm({ onSubmit }: TodoFormProps) {
             placeholder="タスクの詳細を入力..."
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             rows={3}
+          />
+        </div>
+        <div>
+          <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
+            優先度
+          </label>
+          <PriorityPulldown
+            priority={priority}
+            onChange={(newPriority) => setPriority(newPriority)}
           />
         </div>
         <button

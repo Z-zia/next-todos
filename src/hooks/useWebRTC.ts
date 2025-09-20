@@ -67,8 +67,8 @@ export function useWebRTC(roomId: string) {
       }
     });
 
-    socket.on("todos-updated", (todos: Todo[]) => {
-      setTodos(todos);
+    socket.on("todo-updated", (todo: Todo) => {
+      useTodoStore.getState().updateTodoFromPeer(todo);
     });
 
     socket.on("todo-added", (todo: Todo) => {
@@ -182,6 +182,10 @@ export function useWebRTC(roomId: string) {
     socketRef.current?.emit("todo-toggle", { roomId, todo });
   };
 
+  const broadcastTodoUpdate = (todo: Todo) => {
+    socketRef.current?.emit("todo-update", { roomId, todo });
+  };
+
   return {
     isConnected,
     peersCount: peers.size,
@@ -189,5 +193,6 @@ export function useWebRTC(roomId: string) {
     broadcastTodoAdd,
     broadcastTodoDelete,
     broadcastTodoToggle,
+    broadcastTodoUpdate,
   };
 }
